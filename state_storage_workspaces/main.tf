@@ -2,19 +2,21 @@ provider "aws" {
     region = "eu-west-2"
 }
 
+resource "aws_instance" "tac_example" {
+    ami = "ami-0a590332f9f499197"
+    instance_type ="t2.micro"
+}
+
 
 resource "aws_s3_bucket" "accountancycloud-terraform-state" {
   bucket = "accountancycloud-terraform-state"
 
-  # prevent accidental deletion of this S3 bucket
-#   lifecycle {
-#       prevent_destroy = true
-#   }
+  force_destroy = true
 
   # Enable versioning so we can see the full revision history of our state files
-#   versioning {
-#       enabled = true
-#   }
+  versioning {
+      enabled = true
+  }
 
   # Enable server-side encryption by default
   server_side_encryption_configuration {
@@ -40,7 +42,7 @@ resource "aws_dynamodb_table" "terraform_locks" {
 terraform {
     backend "s3" {
         bucket = "accountancycloud-terraform-state"
-        key = "global/s3/terraform.tfstate"
+        key = "workspaces-tac/s3/terraform.tfstate"
         region = "eu-west-2"
         dynamodb_table = "tac-db-locks"
         encrypt = true
