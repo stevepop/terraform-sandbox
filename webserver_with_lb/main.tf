@@ -1,17 +1,20 @@
 terraform {
-  required_version = ">= 0.12, < 0.13"
+  required_providers {
+    aws = {
+      source = "hashicorp/aws"
+      version = "3.41.0"
+    }
+  }
 }
 
 provider "aws" {
+    profile = "personal"
     region = "eu-west-2"
-
-  # Allow any 2.x version of the AWS provider
-  version = "~> 2.0"
 }
 
   # Create launch configuration for ASG
 resource "aws_launch_configuration" "sandbox" {
-  image_id  = "ami-0a590332f9f499197"
+  image_id  = "ami-09dac0f79188a7213"
   instance_type ="t2.micro"
   security_groups = [aws_security_group.instance.id]
   user_data = <<-EOF
@@ -31,7 +34,7 @@ resource "aws_launch_configuration" "sandbox" {
 resource "aws_autoscaling_group" "sandbox" {
   launch_configuration  = aws_launch_configuration.sandbox.id
   vpc_zone_identifier  = data.aws_subnet_ids.default.ids
-  availability_zones   = data.aws_availability_zones.all.names
+  #availability_zones   = data.aws_availability_zones.all.names
 
   min_size = 2
   max_size = 10
@@ -74,7 +77,7 @@ resource "aws_lb" "sandbox" {
   security_groups    = [aws_security_group.alb.id]
 }
 
-resource "aws_lb_listener" "http" {
+resource "aws_lb_listener" "http" { 
   load_balancer_arn = aws_lb.sandbox.arn
   port              = 80
   protocol          = "HTTP"
